@@ -34,15 +34,15 @@ if (args.help || args.h) {
   newDay(dateString)
 } else if (args._.length) {
   var message = args._.join(' ')
-  if (message.startsWith('TODO ')) {
-    addLine(dateString, 'todo', message.replace('TODO ', ''))
+  if (message.toLowerCase().startsWith('todo ')) {
+    addLine(dateString, 'todo', message.substr(5))
   } else {
     addLine(dateString, 'actions', message)
   }
 } else if (args.add || args.a) {
   addLine(dateString, 'actions', args.add)
 } else if (args.todo || args.t) {
-  addLine(dateString, 'actions', args.add)
+  addLine(dateString, 'todo', args.add)
 } else if (args.edit || args.e) {
   editFile(dateString)
 } else if (args.week || args.w) {
