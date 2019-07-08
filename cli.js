@@ -19,6 +19,8 @@ var usage = `Usage
     --todo -t
     --week -w
     --yesterday -y
+    --tomorrow
+    --procrastinate -p --to date
 `
 
 var HOME_DIR = homedir()
@@ -27,6 +29,9 @@ var DATA_DIR = path.join(HOME_DIR, '.worklog', 'logs')
 mkdirp.sync(DATA_DIR)
 
 var dateString = args.date || args.d || formatDate(new Date())
+
+// console.log(dateString)
+// console.log(args)
 
 if (args.help || args.h) {
   console.log(usage)
@@ -47,15 +52,18 @@ if (args.help || args.h) {
   editFile(dateString)
 } else if (args.week || args.w) {
   showWeek(dateString)
-} else if (args.date || args.d) {
-  showDay(args.date)
 } else if (args.today) {
-  showDay()
+  showDay(formatDate(new Date()))
+} else if (args.tomorrow) {
+  dateString = formatDate(moment().add(1, 'day'))
+  showDay(dateString)
 } else if (args.yesterday || args.y) {
   dateString = formatDate(moment().subtract(1, 'day'))
   showDay(dateString)
+} else if (args.procrastinate || args.p) {
+  procrastinate(dateString, args.to)
 } else {
-  showDay()
+  showDay(dateString)
 }
 
 function addLine (dateString, section, message) {
@@ -105,7 +113,7 @@ function showDay (dateString) {
     dateLine = dateLine + ' - TODAY'
   }
   console.log(dateLine)
-  console.log('- Log:')
+  console.log('- Done:')
   if (data.actions && data.actions.length) {
     data.actions.forEach(function (action) {
       if (typeof action === 'object') {
@@ -130,7 +138,7 @@ function showWeek (dateString) {
     var data = getDay(formatDate(date))
     console.log('\n# ' + moment(data.date).format('YYYY-MM-DD - dddd'))
     if (data.actions && data.actions.length) {
-      console.log('- Log:')
+      console.log('- Done:')
       if (data.actions && data.actions.length) {
         data.actions.forEach(function (action) {
           console.log('  - ' + action)
@@ -174,4 +182,22 @@ function saveFile (dateString, data) {
     console.log(e)
     process.exit(1)
   }
+}
+
+// Move a day's todo to another day, defaulting to tomorrow
+function procrastinate (dateString, futureDateString) {
+  futureDateString = futureDateString || formatDate(moment(dateString).add(1, 'day'))
+  var futureDay = getDay(futureDateString)
+  var day = getDay(dateString)
+  if (day.todo) {
+    futureDay.todo = futureDay.todo || []
+    day.todo.forEach(function (item) {
+      futureDay.todo.push(item)
+    })
+    saveFile(futureDateString, futureDay)
+    delete day.todo
+    saveFile(dateString, day)
+  }
+  showDay(dateString)
+  showDay(futureDateString)
 }
