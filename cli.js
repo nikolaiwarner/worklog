@@ -94,6 +94,9 @@ function newDay (dateString) {
 
 function editFile (dateString) {
   var filename = filenameFromDateString(dateString)
+  if (!fs.existsSync(filename)) {
+    newDay(dateString)
+  }
   open(filename)
 }
 
@@ -103,6 +106,15 @@ function getDay (dateString) {
     return newDay(dateString)
   }
   return loadFile(dateString)
+}
+
+// Items with more `priorityString` with be ordered first!
+function sortByPriority (items, priorityString) {
+  priorityString = priorityString || '!'
+  var regex = new RegExp(priorityString, 'g');
+  return items.sort(function(a, b) {
+    return (b.match(regex) || []).length - (a.match(regex) || []).length
+  })
 }
 
 function showDay (dateString) {
@@ -126,7 +138,7 @@ function showDay (dateString) {
   }
   if (data.todo && data.todo.length) {
     console.log('- Todo:')
-    data.todo.forEach(function (action) {
+    sortByPriority(data.todo).forEach(function (action) {
       console.log('  - ' + action)
     })
   }
@@ -170,6 +182,9 @@ function loadFile (dateString) {
 function saveFile (dateString, data) {
   try {
     if (!data.actions) { data.action = [] }
+    if (data.todo) {
+      data.todo = sortByPriority(data.todo)
+    }
     let yamlData = yaml.safeDump(data, {
       sortKeys: true
     })
