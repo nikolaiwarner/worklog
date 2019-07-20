@@ -45,9 +45,17 @@ if (args.help || args.h) {
     addLine(dateString, 'actions', message)
   }
 } else if (args.add || args.a) {
-  addLine(dateString, 'actions', args.add)
+  addLine(dateString, 'actions', (args.add || args.a))
+} else if (args.remove !== undefined || args.rm !== undefined || args.r !== undefined) {
+  removeAction({
+    dateString,
+    index: (args.remove || args.rm || args.r),
+    isTodo: !!(args.todo || args.t)
+  })
 } else if (args.todo || args.t) {
   addLine(dateString, 'todo', args.add)
+} else if (args.done !== undefined || args.d !== undefined) {
+  markTodoDone(dateString, (args.done || args.d))
 } else if (args.edit || args.e) {
   editFile(dateString)
 } else if (args.week || args.w) {
@@ -117,6 +125,10 @@ function sortByPriority (items, priorityString) {
   })
 }
 
+function renderActionLine (index, action) {
+  console.log(`  ${index}: ` + action)
+}
+
 function showDay (dateString) {
   var date = moment(dateString)
   var data = getDay(formatDate(dateString))
@@ -127,19 +139,19 @@ function showDay (dateString) {
   console.log(dateLine)
   console.log('- Done:')
   if (data.actions && data.actions.length) {
-    data.actions.forEach(function (action) {
+    data.actions.forEach(function (action, index) {
       if (typeof action === 'object') {
         action = JSON.stringify(action)
-        console.log('  - ' + action)
+        renderActionLine(index, action)
       } else {
-        console.log('  - ' + action)
+        renderActionLine(index, action)
       }
     })
   }
   if (data.todo && data.todo.length) {
     console.log('- Todo:')
-    sortByPriority(data.todo).forEach(function (action) {
-      console.log('  - ' + action)
+    sortByPriority(data.todo).forEach(function (action, index) {
+      renderActionLine(index, action)
     })
   }
 }
@@ -152,15 +164,15 @@ function showWeek (dateString) {
     if (data.actions && data.actions.length) {
       console.log('- Done:')
       if (data.actions && data.actions.length) {
-        data.actions.forEach(function (action) {
-          console.log('  - ' + action)
+        data.actions.forEach(function (action, index) {
+          renderActionLine(index, action)
         })
       }
     }
     if (data.todo && data.todo.length) {
       console.log('- Todo:')
-      data.todo.forEach(function (action) {
-        console.log('  - ' + action)
+      data.todo.forEach(function (action, index) {
+        renderActionLine(index, action)
       })
     }
     if ((!data.actions || !data.actions.length) && (!data.todo || !data.todo.length)) {
@@ -215,4 +227,37 @@ function procrastinate (dateString, futureDateString) {
   }
   showDay(dateString)
   showDay(futureDateString)
+}
+
+function markTodoDone (dateString, index) {
+  var day = getDay(dateString)
+  if (day.todo && day.todo[index]) {
+    day.actions.push(day.todo[index])
+    day.todo.splice(index, 1)
+    saveFile(dateString, day)
+    showDay(dateString)
+  } else {
+    console.log('>>> Todo not found')
+  }
+}
+
+function removeAction ({ dateString, index, isTodo }) {
+  var day = getDay(dateString)
+  if (isTodo) {
+    if (day.todo && day.todo[index]) {
+      day.todo.splice(index, 1)
+      saveFile(dateString, day)
+      showDay(dateString)
+    } else {
+      console.log('>>> Not found')
+    }
+  } else {
+    if (day.actions && day.actions[index]) {
+      day.actions.splice(index, 1)
+      saveFile(dateString, day)
+      showDay(dateString)
+    } else {
+      console.log('>>> Not found')
+    }
+  }
 }
