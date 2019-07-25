@@ -119,8 +119,8 @@ function getDay (dateString) {
 // Items with more `priorityString` with be ordered first!
 function sortByPriority (items, priorityString) {
   priorityString = priorityString || '!'
-  var regex = new RegExp(priorityString, 'g');
-  return items.sort(function(a, b) {
+  var regex = new RegExp(priorityString, 'g')
+  return items.sort(function (a, b) {
     return (b.match(regex) || []).length - (a.match(regex) || []).length
   })
 }
@@ -135,6 +135,9 @@ function showDay (dateString) {
   var dateLine = '\n# ' + date.format('YYYY-MM-DD - dddd')
   if (date.isSame(moment(), 'day')) {
     dateLine = dateLine + ' - TODAY'
+  }
+  if (date.isSame(moment().add(1, 'day'), 'day')) {
+    dateLine = dateLine + ' - TOMORROW'
   }
   console.log(dateLine)
   console.log('- Done:')
@@ -197,7 +200,7 @@ function saveFile (dateString, data) {
     if (data.todo) {
       data.todo = sortByPriority(data.todo)
     }
-    let yamlData = yaml.safeDump(data, {
+    const yamlData = yaml.safeDump(data, {
       sortKeys: true
     })
     fs.writeFileSync(filenameFromDateString(dateString), yamlData, 'utf8', function (err) {
@@ -213,7 +216,13 @@ function saveFile (dateString, data) {
 
 // Move a day's todo to another day, defaulting to tomorrow
 function procrastinate (dateString, futureDateString) {
-  futureDateString = futureDateString || formatDate(moment(dateString).add(1, 'day'))
+  // Proper procrastination requires skipping weekends
+  futureDateString = futureDateString || dateString
+  if (moment(dateString).day() === 5) {
+    futureDateString = formatDate(moment(dateString).add(3, 'day'))
+  } else {
+    futureDateString = formatDate(moment(dateString).add(1, 'day'))
+  }
   var futureDay = getDay(futureDateString)
   var day = getDay(dateString)
   if (day.todo) {
@@ -231,7 +240,7 @@ function procrastinate (dateString, futureDateString) {
 
 function markTodoDone (dateString, index) {
   var day = getDay(dateString)
-  if (day.todo && day.todo[index]) {
+  if (day.todo && day.todo[index] !== undefined) {
     day.actions.push(day.todo[index])
     day.todo.splice(index, 1)
     saveFile(dateString, day)
