@@ -54,8 +54,8 @@ if (args.help || args.h) {
   })
 } else if (args.todo || args.t) {
   addLine(dateString, 'todo', args.add)
-} else if (args.done !== undefined || args.d !== undefined) {
-  markTodoDone(dateString, (args.done || args.d))
+} else if (args.done !== undefined) {
+  markTodoDone(dateString, args.done)
 } else if (args.edit || args.e) {
   editFile(dateString)
 } else if (args.week || args.w) {
