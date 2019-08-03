@@ -9,9 +9,15 @@ var path = require('path')
 var args = minimist(process.argv.slice(2))
 var yaml = require('js-yaml')
 
-var usage = `Usage
+var usage = `
+  worklog
 
-  worklog hello
+  Version: 1.0.1
+
+  Usage:
+  $ worklog made a treasure
+  $ worklog todo find a nice cave
+  $ worklog --done 0
 
   Options:
     --date -d
@@ -33,7 +39,7 @@ var dateString = args.date || args.d || formatDate(new Date())
 // console.log(dateString)
 // console.log(args)
 
-if (args.help || args.h) {
+if (args.help || args.h || args.v) {
   console.log(usage)
 } else if (args.new) {
   newDay(dateString)
@@ -71,6 +77,7 @@ if (args.help || args.h) {
 } else if (args.procrastinate || args.p) {
   procrastinate(dateString, args.to)
 } else {
+  console.log('Use -h or --help for help')
   showDay(dateString)
 }
 

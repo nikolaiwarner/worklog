@@ -1,12 +1,13 @@
 {
   "name": "worklog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "sudo pkg cli.js --output /usr/bin/wl"
   },
-  "author": "",
+  "author": "nikolaiwarner",
   "license": "ISC",
   "dependencies": {
     "js-yaml": "^3.13.1",
@@ -17,6 +18,7 @@
     "path": "^0.12.7"
   },
   "devDependencies": {
+    "pkg": "^4.4.0",
     "standard": "^13.0.2"
   }
 }
